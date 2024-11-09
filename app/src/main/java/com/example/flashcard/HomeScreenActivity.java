@@ -7,22 +7,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.example.flashcard.Flashcard;
-import com.example.flashcard.FlashcardAdapter;
-import com.example.flashcard.FlashcardEditActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class HomeScreenActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private FloatingActionButton addFlashcardBtn;
-    private Button shuffleButton;
+    private Button shuffleButton, randomQuestionButton;
     private FlashcardAdapter adapter;
     private List<Flashcard> flashcardList;
 
@@ -34,6 +31,7 @@ public class HomeScreenActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         addFlashcardBtn = findViewById(R.id.addFlashcardBtn);
         shuffleButton = findViewById(R.id.shuffleButton);
+        randomQuestionButton = findViewById(R.id.randomQuestionButton);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         flashcardList = new ArrayList<>();
@@ -48,6 +46,7 @@ public class HomeScreenActivity extends AppCompatActivity {
         });
 
         shuffleButton.setOnClickListener(v -> shuffleFlashcards());
+        randomQuestionButton.setOnClickListener(v -> showRandomQuestion());
     }
 
     @Override
@@ -75,5 +74,21 @@ public class HomeScreenActivity extends AppCompatActivity {
         // Shuffle the list of flashcards
         Collections.shuffle(flashcardList);
         adapter.notifyDataSetChanged(); // Notify the adapter to refresh the RecyclerView
+    }
+
+    private void showRandomQuestion() {
+        if (!flashcardList.isEmpty()) {
+            // Select a random flashcard
+            Random random = new Random();
+            int randomIndex = random.nextInt(flashcardList.size());
+            Flashcard randomFlashcard = flashcardList.get(randomIndex);
+
+            // Start FlashcardViewActivity to display the random flashcard
+            Intent intent = new Intent(HomeScreenActivity.this, FlashcardViewActivity.class);
+            intent.putExtra("flashcard", randomFlashcard);
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "No flashcards available", Toast.LENGTH_SHORT).show();
+        }
     }
 }

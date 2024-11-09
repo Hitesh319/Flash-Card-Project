@@ -38,11 +38,6 @@ public class FlashcardAdapter extends RecyclerView.Adapter<FlashcardAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Flashcard flashcard = flashcards.get(position);
         holder.questionText.setText(flashcard.getQuestion());
-        holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, FlashcardViewActivity.class);
-            intent.putExtra("flashcard", flashcard);
-            context.startActivity(intent);
-        });
 
         // Display "Known" status if the flashcard is marked as known
         if (flashcard.isKnown()) {
