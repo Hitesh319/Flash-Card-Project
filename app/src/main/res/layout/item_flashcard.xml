@@ -8,17 +8,27 @@
         android:id="@+id/questionText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sample Question" />
+        android:text="Sample Question"
+        android:textSize="18sp" />
+
+    <!-- TextView to show if the flashcard is known -->
+    <TextView
+        android:id="@+id/knownStatusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Not Known"
+        android:textColor="@android:color/holo_green_dark"
+        android:layout_marginTop="4dp" />
 
     <Button
         android:id="@+id/editButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Edit"/>
+        android:text="Edit" />
 
     <Button
         android:id="@+id/deleteButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Delete"/>
+        android:text="Delete" />
 </LinearLayout>

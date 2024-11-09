@@ -1,34 +1,48 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center">
 
-    <TextView
-        android:id="@+id/questionText"
+    <!-- Container for flip animation -->
+    <FrameLayout
+        android:id="@+id/flashcardContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Question here"
-        android:textSize="18sp"
-        android:visibility="visible"
-        android:gravity="center_horizontal"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true">
 
-    <TextView
-        android:id="@+id/answerText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Answer here"
-        android:textSize="18sp"
-        android:visibility="gone"
-        android:gravity="center_horizontal"
-        android:layout_centerInParent="true"/>
+        <!-- Question view (front of flashcard) -->
+        <TextView
+            android:id="@+id/questionText"
+            android:layout_width="309dp"
+            android:layout_height="290dp"
+            android:background="@drawable/flashcard_background"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="Question"
+            android:textSize="24sp" />
 
-    <Button
-        android:id="@+id/markAsKnownButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Mark as Known"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"/>
+        <!-- Answer view (back of flashcard) -->
+        <TextView
+            android:id="@+id/answerText"
+            android:layout_width="309dp"
+            android:layout_height="290dp"
+            android:text="Answer"
+            android:textSize="24sp"
+            android:gravity="center"
+            android:padding="16dp"
+            android:background="@drawable/green_background"
+            android:visibility="gone" /> <!-- Initially hidden -->
+
+        <Button
+            android:id="@+id/markAsKnownButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mark as Known"
+            android:layout_below="@id/flashcardContainer"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp" />
+
+    </FrameLayout>
+
 </RelativeLayout>

@@ -38,11 +38,23 @@ public class FlashcardAdapter extends RecyclerView.Adapter<FlashcardAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Flashcard flashcard = flashcards.get(position);
         holder.questionText.setText(flashcard.getQuestion());
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, FlashcardViewActivity.class);
+            intent.putExtra("flashcard", flashcard);
+            context.startActivity(intent);
+        });
 
-        // Set up delete button click listener
+        // Display "Known" status if the flashcard is marked as known
+        if (flashcard.isKnown()) {
+            holder.knownStatusText.setText("Known");
+            holder.knownStatusText.setTextColor(context.getResources().getColor(android.R.color.holo_green_dark));
+        } else {
+            holder.knownStatusText.setText("Not Known");
+            holder.knownStatusText.setTextColor(context.getResources().getColor(android.R.color.holo_red_dark));
+        }
+
+        // Set up edit and delete button click listeners
         holder.deleteButton.setOnClickListener(v -> deleteFlashcard(flashcard, position));
-
-        // Set up edit button click listener (if needed for edit functionality)
         holder.editButton.setOnClickListener(v -> {
             Intent intent = new Intent(context, FlashcardEditActivity.class);
             intent.putExtra("flashcard", flashcard);
@@ -55,40 +67,32 @@ public class FlashcardAdapter extends RecyclerView.Adapter<FlashcardAdapter.View
         return flashcards.size();
     }
 
-    // Method to delete flashcard from Firestore and update RecyclerView
-    private void deleteFlashcard(Flashcard flashcard, int position) {
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-
-        // Log the ID to ensure it’s correct
-        Log.d("DeleteDebug", "Attempting to delete flashcard with ID: " + flashcard.getId());
-
-        // Delete flashcard from Firestore by ID
-        firestore.collection("flashcards").document(flashcard.getId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    // Remove the flashcard from the local list and notify the adapter
-                    flashcards.remove(position);
-                    notifyItemRemoved(position);
-                    notifyItemRangeChanged(position, flashcards.size());
-                    Toast.makeText(context, "Flashcard deleted!", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(context, "Failed to delete flashcard!", Toast.LENGTH_SHORT).show();
-                    Log.d("DeleteDebug", "Deletion failed", e);
-                });
-    }
-
-
+    // ViewHolder class with knownStatusText
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView questionText;
+        TextView questionText, knownStatusText;
         Button editButton, deleteButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             questionText = itemView.findViewById(R.id.questionText);
+            knownStatusText = itemView.findViewById(R.id.knownStatusText); // Status text
             editButton = itemView.findViewById(R.id.editButton);
             deleteButton = itemView.findViewById(R.id.deleteButton);
         }
+    }
+
+    private void deleteFlashcard(Flashcard flashcard, int position) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("flashcards").document(flashcard.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    flashcards.remove(position);
+                    notifyItemRemoved(position);
+                    Toast.makeText(context, "Flashcard deleted!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(context, "Failed to delete flashcard!", Toast.LENGTH_SHORT).show();
+                });
     }
 }
 
