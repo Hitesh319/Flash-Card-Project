@@ -1,5 +1,6 @@
 package com.example.flashcard;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -7,6 +8,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class FlashcardEditActivity extends AppCompatActivity {
 
@@ -33,26 +35,30 @@ public class FlashcardEditActivity extends AppCompatActivity {
         saveButton.setOnClickListener(v -> {
             String question = questionInput.getText().toString();
             String answer = answerInput.getText().toString();
-            saveFlashcardToFirebase(question, answer);
+            saveFlashcardToFirestore(question, answer);
         });
     }
 
-    private void saveFlashcardToFirebase(String question, String answer) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("flashcards");
+    private void saveFlashcardToFirestore(String question, String answer) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        if (flashcardId == null) { // New flashcard
-            flashcardId = databaseReference.push().getKey();
-        }
+        // Generate a unique document ID and store it in the Flashcard object
+        String id = firestore.collection("flashcards").document().getId();
+        Flashcard flashcard = new Flashcard(id, question, answer, false);
 
-        Flashcard flashcard = new Flashcard(flashcardId, question, answer, false);
-        databaseReference.child(flashcardId).setValue(flashcard)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(this, "Flashcard saved!", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(this, "Failed to save flashcard!", Toast.LENGTH_SHORT).show();
-                    }
+        firestore.collection("flashcards").document(id)
+                .set(flashcard)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Flashcard saved!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(FlashcardEditActivity.this, HomeScreenActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to save flashcard!", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 });
     }
+
 }

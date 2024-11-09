@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.*;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +37,7 @@ public class HomeScreenActivity extends AppCompatActivity {
         adapter = new FlashcardAdapter(flashcardList, this);
         recyclerView.setAdapter(adapter);
 
+        // Load flashcards initially
         loadFlashcards();
 
         addFlashcardBtn.setOnClickListener(v -> {
@@ -43,24 +46,25 @@ public class HomeScreenActivity extends AppCompatActivity {
         });
     }
 
-    private void loadFlashcards() {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("flashcards");
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                flashcardList.clear();
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-                    Flashcard flashcard = dataSnapshot.getValue(Flashcard.class);
-                    flashcardList.add(flashcard);
-                }
-                Collections.shuffle(flashcardList); // Shuffle feature
-                adapter.notifyDataSetChanged();
-            }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadFlashcards(); // Refresh flashcards when returning to the screen
+    }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(HomeScreenActivity.this, "Failed to load flashcards.", Toast.LENGTH_SHORT).show();
-            }
-        });
+    private void loadFlashcards() {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        firestore.collection("flashcards")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    flashcardList.clear();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        Flashcard flashcard = document.toObject(Flashcard.class);
+                        flashcardList.add(flashcard);
+                    }
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to load flashcards.", Toast.LENGTH_SHORT).show());
     }
 }
+
