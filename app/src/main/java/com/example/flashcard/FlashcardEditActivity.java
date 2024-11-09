@@ -1,20 +1,17 @@
 package com.example.flashcard;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class FlashcardEditActivity extends AppCompatActivity {
 
     private EditText questionInput, answerInput;
     private Button saveButton;
-    private String flashcardId;
+    private String flashcardId; // Store flashcard ID for editing
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,9 +22,11 @@ public class FlashcardEditActivity extends AppCompatActivity {
         answerInput = findViewById(R.id.answerInput);
         saveButton = findViewById(R.id.saveButton);
 
+        // Retrieve the flashcard data from the intent
         Flashcard flashcard = (Flashcard) getIntent().getSerializableExtra("flashcard");
+
         if (flashcard != null) {
-            flashcardId = flashcard.getId();
+            flashcardId = flashcard.getId(); // Set the flashcard ID for updating
             questionInput.setText(flashcard.getQuestion());
             answerInput.setText(flashcard.getAnswer());
         }
@@ -35,30 +34,30 @@ public class FlashcardEditActivity extends AppCompatActivity {
         saveButton.setOnClickListener(v -> {
             String question = questionInput.getText().toString();
             String answer = answerInput.getText().toString();
-            saveFlashcardToFirestore(question, answer);
+            saveFlashcardToFirebase(question, answer);
         });
     }
 
-    private void saveFlashcardToFirestore(String question, String answer) {
+    private void saveFlashcardToFirebase(String question, String answer) {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        // Generate a unique document ID and store it in the Flashcard object
-        String id = firestore.collection("flashcards").document().getId();
-        Flashcard flashcard = new Flashcard(id, question, answer, false);
+        if (flashcardId == null) {
+            // If flashcardId is null, create a new flashcard
+            flashcardId = firestore.collection("flashcards").document().getId();
+        }
 
-        firestore.collection("flashcards").document(id)
+        Flashcard flashcard = new Flashcard(flashcardId, question, answer, false);
+
+        // Update or create the flashcard document in Firestore
+        firestore.collection("flashcards").document(flashcardId)
                 .set(flashcard)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Flashcard saved!", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(FlashcardEditActivity.this, HomeScreenActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    finish();
+                    finish(); // Close the activity after saving
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to save flashcard!", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 });
     }
-
 }
